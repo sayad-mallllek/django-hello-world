@@ -3,6 +3,15 @@ from django.db import models
 from utils.models import BaseModel
 
 
+class Status(models.TextChoices):
+    SHIPPING = "shipping"
+    RECEIVED = "received"
+    BOXING = "boxing"
+    DELIVERED = "delivered"
+    COMPLETED = "completed"
+    REJECTED = "rejected"
+
+
 # Create your models here.
 class Order(BaseModel):
     id = models.AutoField(primary_key=True)
@@ -15,6 +24,9 @@ class Order(BaseModel):
     has_received_price = models.BooleanField(default=False)
     bill_id = models.CharField(max_length=255)
     customer_delivery_charge = models.FloatField()
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.SHIPPING
+    )
 
     customer = models.ForeignKey("customers.Customer", on_delete=models.CASCADE)
     order_basket = models.ForeignKey("OrderBasket", on_delete=models.CASCADE)
@@ -35,6 +47,9 @@ class OrderBasket(BaseModel):
     shipping_charge = models.FloatField()
     shipped_at = models.DateTimeField(null=True, blank=True)
     received_at = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.SHIPPING
+    )
 
     shipping_provider = models.ForeignKey(
         "providers.ShippingProvider", on_delete=models.CASCADE

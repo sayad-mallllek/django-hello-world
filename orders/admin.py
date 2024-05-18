@@ -13,12 +13,14 @@ class OrderAdmin(BaseAdminModel):
         "bill_id",
         "get_customer",
         "get_delivery_provider",
+        "status",
         "total_price",
     )
     search_fields = ("id",)
     list_filter = (
         "id",
         "customer_id__full_name",
+        "status",
         "delivery_provider_id__name",
     )
 
@@ -84,11 +86,13 @@ class OrderBasketAdmin(BaseAdminModel):
     list_display = (
         "id",
         "get_shipping_provider",
+        "status",
         "total_price",
     )
     search_fields = ("id",)
     list_filter = (
         "id",
+        "status",
         "shipping_provider_id__name",
     )
 

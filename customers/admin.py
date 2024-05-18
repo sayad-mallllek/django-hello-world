@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.db import models
 from customers.models import Customer
 from utils.models import BaseAdminModel
 
