@@ -12,6 +12,10 @@ class BaseProvider(BaseModel):
         return self.name
 
 
+class ShippingSource(BaseModel):
+    name = models.CharField(max_length=255)
+
+
 class ShippingProvider(BaseProvider):
     price_per_kg = models.FloatField()
     address = models.CharField(max_length=255)

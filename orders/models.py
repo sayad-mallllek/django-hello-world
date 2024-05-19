@@ -50,7 +50,9 @@ class OrderBasket(BaseModel):
     status = models.CharField(
         max_length=20, choices=Status.choices, default=Status.SHIPPING
     )
-
+    shipping_source = models.ForeignKey(
+        "providers.ShippingSource", on_delete=models.CASCADE, null=True, blank=True
+    )
     shipping_provider = models.ForeignKey(
         "providers.ShippingProvider", on_delete=models.CASCADE
     )
