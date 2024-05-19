@@ -28,7 +28,7 @@ class Order(BaseModel):
     ordered_at = models.DateTimeField(null=True, blank=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
     has_received_price = models.BooleanField(default=False)
-    bill_id = models.CharField(max_length=255)
+    bill_id = models.CharField(max_length=255, null=True, blank=True)
     customer_delivery_charge = models.FloatField(null=True, blank=True)
     status = models.CharField(
         max_length=20, choices=OrderStatus.choices, default=OrderStatus.PENDING

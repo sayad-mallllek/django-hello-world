@@ -33,8 +33,9 @@ class BaseAdminModel(admin.ModelAdmin, DynamicArrayMixin):
     #     return qs.exclude(deleted_at=None)
 
 
-class BaseAdminTabularInline(admin.StackedInline):
+class BaseAdminInline(admin.StackedInline):
     readonly_fields = ("created_at", "updated_at")
+    classes = ["collapse"]
 
     # def get_queryset(self, request):
     #     qs = super().get_queryset(request)

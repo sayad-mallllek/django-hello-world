@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from orders.models import Order, OrderBasket
-from utils.models import BaseAdminModel, BaseAdminTabularInline
+from utils.models import BaseAdminModel, BaseAdminInline
 
 
 # Register your models here.
@@ -72,7 +72,7 @@ class OrderAdmin(BaseAdminModel):
     )
 
 
-class InlineOrderAdmin(BaseAdminTabularInline):
+class InlineOrderAdmin(BaseAdminInline):
     model = Order
     extra = 0
 
