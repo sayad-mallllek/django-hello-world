@@ -35,7 +35,7 @@ class Order(BaseModel):
     )
 
     def __str__(self):
-        return self.order_id
+        return f"{self.id}"
 
 
 class OrderBasket(BaseModel):
@@ -58,4 +58,4 @@ class OrderBasket(BaseModel):
     )
 
     def __str__(self):
-        return self.id
+        return f"{self.id}"

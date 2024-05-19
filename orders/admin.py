@@ -76,6 +76,37 @@ class InlineOrderAdmin(BaseAdminTabularInline):
     model = Order
     extra = 0
 
+    fieldsets = (
+        (
+            "Items",
+            {
+                "fields": (
+                    "total_price",
+                    "number_of_items",
+                    "items_link",
+                    "bill_id",
+                )
+            },
+        ),
+        (
+            "Delivery",
+            {
+                "fields": (
+                    "delivered_at",
+                    "delivery_charge",
+                    "delivery_provider",
+                    "customer_delivery_charge",
+                    "has_received_price",
+                )
+            },
+        ),
+        (
+            "Customer",
+            {"fields": ("customer",)},
+        ),
+        ("Order Basket", {"fields": ("order_basket",)}),
+    )
+
 
 @admin.register(OrderBasket)
 class OrderBasketAdmin(BaseAdminModel):
@@ -86,6 +117,7 @@ class OrderBasketAdmin(BaseAdminModel):
     list_display = (
         "id",
         "get_shipping_provider",
+        "get_shipping_source",
         "status",
         "total_price",
     )
@@ -93,9 +125,14 @@ class OrderBasketAdmin(BaseAdminModel):
     list_filter = (
         "id",
         "status",
-        "shipping_provider_id__name",
+        "shipping_provider__name",
+        "shipping_source__name",
     )
 
     @admin.display(ordering="shipping_provider__name", description="Shipping Provider")
     def get_shipping_provider(self, obj):
         return obj.shipping_provider.name
+
+    @admin.display(ordering="shipping_source__name", description="Shipping Source")
+    def get_shipping_source(self, obj):
+        return obj.shipping_source.name
