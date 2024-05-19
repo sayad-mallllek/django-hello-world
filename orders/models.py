@@ -3,11 +3,17 @@ from django.db import models
 from utils.models import BaseModel
 
 
-class Status(models.TextChoices):
-    SHIPPING = "shipping"
-    RECEIVED = "received"
+class OrderStatus(models.TextChoices):
+    PENDING = "pending"
     BOXING = "boxing"
     DELIVERED = "delivered"
+    COMPLETED = "completed"
+    REJECTED = "rejected"
+
+
+class OrderBasketStatus(models.TextChoices):
+    SHIPPING = "shipping"
+    RECEIVED = "received"
     COMPLETED = "completed"
     REJECTED = "rejected"
 
@@ -25,7 +31,7 @@ class Order(BaseModel):
     bill_id = models.CharField(max_length=255)
     customer_delivery_charge = models.FloatField(null=True, blank=True)
     status = models.CharField(
-        max_length=20, choices=Status.choices, default=Status.SHIPPING
+        max_length=20, choices=OrderStatus.choices, default=OrderStatus.PENDING
     )
 
     customer = models.ForeignKey("customers.Customer", on_delete=models.CASCADE)
@@ -48,7 +54,9 @@ class OrderBasket(BaseModel):
     shipped_at = models.DateTimeField(null=True, blank=True)
     received_at = models.DateTimeField(null=True, blank=True)
     status = models.CharField(
-        max_length=20, choices=Status.choices, default=Status.SHIPPING
+        max_length=20,
+        choices=OrderBasketStatus.choices,
+        default=OrderBasketStatus.SHIPPING,
     )
     shipping_source = models.ForeignKey(
         "providers.ShippingSource", on_delete=models.CASCADE, null=True, blank=True
