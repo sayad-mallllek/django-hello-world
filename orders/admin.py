@@ -129,6 +129,34 @@ class OrderBasketAdmin(BaseAdminModel):
         "shipping_source__name",
     )
 
+    fieldsets = (
+        (
+            "Basket Items",
+            {
+                "fields": (
+                    "total_price",
+                    "total_paid_price",
+                    "number_of_items",
+                    "items_link",
+                    "items_weight",
+                )
+            },
+        ),
+        ("Status", {"fields": ("status",)}),
+        (
+            "Shipping",
+            {
+                "fields": (
+                    "shipping_provider",
+                    "shipping_source",
+                    "shipping_charge",
+                    "shipped_at",
+                    "received_at",
+                )
+            },
+        ),
+    )
+
     @admin.display(ordering="shipping_provider__name", description="Shipping Provider")
     def get_shipping_provider(self, obj):
         return obj.shipping_provider.name
