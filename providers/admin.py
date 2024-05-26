@@ -29,17 +29,28 @@ def url_to_edit_object(obj):
 class OrderDeliverProviderInline(admin.StackedInline):
     model = Order
     extra = 0
-    # classes = ["collapse", "show"]
 
     readonly_fields = ("get_order_url",)
     fieldsets = (
         (
-            None,
+            "Order Info",
             {
                 "fields": (
                     "bill_id",
-                    "get_order_url",
                     "status",
+                    "get_order_url",
+                ),
+                "classes": ["collapse", "show"],
+            },
+        ),
+        (
+            "Delivery Charges",
+            {
+                "fields": (
+                    "delivered_at",
+                    "has_received_price",
+                    "delivery_charge",
+                    "customer_delivery_charge",
                 ),
                 "classes": ["collapse", "show"],
             },
