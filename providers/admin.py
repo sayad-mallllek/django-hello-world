@@ -18,14 +18,6 @@ class ShippingProviderAdmin(BaseProvider):
     model = ShippingProvider
 
 
-def url_to_edit_object(obj):
-    url = reverse(
-        "admin:%s_%s_change" % (obj._meta.app_label, obj._meta.model_name),
-        args=[obj.id],
-    )
-    return '<a href="%s">Edit %s</a>' % (url, obj.__unicode__())
-
-
 class OrderDeliverProviderInline(admin.StackedInline):
     model = Order
     extra = 0
@@ -34,7 +26,6 @@ class OrderDeliverProviderInline(admin.StackedInline):
         "collapse",
     ]
 
-    readonly_fields = ("get_order_url",)
     fieldsets = (
         (
             "Order Info",
@@ -42,7 +33,7 @@ class OrderDeliverProviderInline(admin.StackedInline):
                 "fields": (
                     "bill_id",
                     "status",
-                    "get_order_url",
+                    # "get_order_url",
                 ),
             },
         ),
@@ -59,12 +50,6 @@ class OrderDeliverProviderInline(admin.StackedInline):
         ),
     )
 
-    def get_order_url(self, obj):
-        return url_to_edit_object(obj.order)
-
-    get_order_url.short_description = "Order"
-    get_order_url.allow_tags = True
-
 
 @admin.register(DeliveryProvider)
 class DeliveryProviderAdmin(BaseProvider):
@@ -79,8 +64,8 @@ class DeliveryProviderAdmin(BaseProvider):
             {"fields": ("name", "phone_number", "missing_money_from_provider")},
         ),
     )
-    
-    change_form_template = "admin/index.html"
+
+    change_form_template = "providers/index.html"
 
     inlines = [OrderDeliverProviderInline]
 
@@ -91,7 +76,7 @@ class DeliveryProviderAdmin(BaseProvider):
 
     def missing_money_from_provider(self, obj):
         return f"{obj.order_set.filter(has_received_price=False).count()}$"
-    
+
     # def my_view(self, request):
     #     # ...
     #     context = dict(
