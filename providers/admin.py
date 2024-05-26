@@ -30,6 +30,10 @@ class OrderDeliverProviderInline(admin.StackedInline):
     model = Order
     extra = 0
 
+    classes = [
+        "collapse",
+    ]
+
     readonly_fields = ("get_order_url",)
     fieldsets = (
         (
@@ -40,7 +44,6 @@ class OrderDeliverProviderInline(admin.StackedInline):
                     "status",
                     "get_order_url",
                 ),
-                "classes": ["collapse", "show"],
             },
         ),
         (
@@ -52,7 +55,6 @@ class OrderDeliverProviderInline(admin.StackedInline):
                     "delivery_charge",
                     "customer_delivery_charge",
                 ),
-                "classes": ["collapse", "show"],
             },
         ),
     )
@@ -77,6 +79,8 @@ class DeliveryProviderAdmin(BaseProvider):
             {"fields": ("name", "phone_number", "missing_money_from_provider")},
         ),
     )
+    
+    change_form_template = "admin/index.html"
 
     inlines = [OrderDeliverProviderInline]
 
@@ -87,6 +91,16 @@ class DeliveryProviderAdmin(BaseProvider):
 
     def missing_money_from_provider(self, obj):
         return f"{obj.order_set.filter(has_received_price=False).count()}$"
+    
+    # def my_view(self, request):
+    #     # ...
+    #     context = dict(
+    #         # Include common variables for rendering the admin template.
+    #         self.admin_site.each_context(request),
+    #         # Anything else you want in the context...
+    #         key=value,
+    #     )
+    #     return TemplateResponse(request, "admin/index.html", context)
 
 
 @admin.register(ShippingSource)
@@ -95,3 +109,7 @@ class ShippingSourceAdmin(BaseAdminModel):
 
     list_display = ("name",)
     search_fields = ("name",)
+
+
+class Media:
+    js = ["js/collapsed-stacked-inlines.js"]

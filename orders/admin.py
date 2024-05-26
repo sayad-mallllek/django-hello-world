@@ -168,18 +168,3 @@ class OrderBasketAdmin(BaseAdminModel):
     @admin.display(ordering="shipping_source__name", description="Shipping Source")
     def get_shipping_source(self, obj):
         return obj.shipping_source.name
-
-
-# from django.contrib import admin
-# from django.shortcuts import render
-
-
-# def overview_admin_view(request):
-#     # Access and process data for your overview view here
-#     context = {
-#         # Add context data based on your needs
-#     }
-#     return render(request, "pages/overview.html", context)
-
-
-# admin.site.add_index_view(overview_admin_view)
