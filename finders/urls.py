@@ -19,7 +19,10 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls.static import static
 from finders import settings
+from django.template.response import TemplateResponse
 
-urlpatterns = [
-    path("", admin.site.urls),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+from finders.admin import admin_site
+
+urlpatterns = [path("", admin_site.urls)] + static(
+    settings.STATIC_URL, document_root=settings.STATIC_ROOT
+)
