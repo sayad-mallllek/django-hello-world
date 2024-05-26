@@ -18,7 +18,6 @@ class OrderAdmin(BaseAdminModel):
     )
     search_fields = ("id",)
     list_filter = (
-        "id",
         "customer_id__full_name",
         "status",
         "delivery_provider_id__name",
