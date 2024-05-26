@@ -120,10 +120,13 @@ class OrderBasketAdmin(BaseAdminModel):
         "get_shipping_source",
         "status",
         "total_price",
+        "created_at",
     )
     search_fields = ("id",)
     list_filter = (
-        "id",
+        ("created_at", admin.DateFieldListFilter),
+        ("shipped_at", admin.DateFieldListFilter),
+        ("received_at", admin.DateFieldListFilter),
         "status",
         "shipping_provider__name",
         "shipping_source__name",
