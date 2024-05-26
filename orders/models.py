@@ -33,6 +33,7 @@ class Order(BaseModel):
     status = models.CharField(
         max_length=20, choices=OrderStatus.choices, default=OrderStatus.PENDING
     )
+    notes = models.TextField(null=True, blank=True, max_length=10000)
 
     customer = models.ForeignKey("customers.Customer", on_delete=models.CASCADE)
     order_basket = models.ForeignKey("OrderBasket", on_delete=models.CASCADE)
@@ -59,6 +60,8 @@ class OrderBasket(BaseModel):
         choices=OrderBasketStatus.choices,
         default=OrderBasketStatus.SHIPPING,
     )
+    notes = models.TextField(null=True, blank=True, max_length=10000)
+
     shipping_source = models.ForeignKey(
         "providers.ShippingSource", on_delete=models.CASCADE, null=True, blank=True
     )
