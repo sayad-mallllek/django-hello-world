@@ -64,6 +64,7 @@ class OrderAdmin(BaseAdminModel):
                 )
             },
         ),
+        ("Status", {"fields": ("status",)}),
         (
             "Customer",
             {"fields": ("customer",)},
@@ -100,6 +101,7 @@ class InlineOrderAdmin(BaseAdminInline):
                 )
             },
         ),
+        ("Status", {"fields": ("status",)}),
         (
             "Customer",
             {"fields": ("customer",)},
