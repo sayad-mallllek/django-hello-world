@@ -51,6 +51,20 @@ class OrderDeliverProviderInline(admin.StackedInline):
     )
 
 
+class ReceivedOrderDeliverProviderInline(OrderDeliverProviderInline):
+    verbose_name = "Received Price Order"
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(has_received_price=True)
+
+
+class PendingOrderDeliverProviderInline(OrderDeliverProviderInline):
+    verbose_name = "Pending Price Order"
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(has_received_price=False)
+
+
 @admin.register(DeliveryProvider)
 class DeliveryProviderAdmin(BaseProvider):
     model = DeliveryProvider
@@ -67,7 +81,7 @@ class DeliveryProviderAdmin(BaseProvider):
 
     change_form_template = "providers/index.html"
 
-    inlines = [OrderDeliverProviderInline]
+    inlines = [ReceivedOrderDeliverProviderInline, PendingOrderDeliverProviderInline]
 
     def get_orders_count(self, obj):
         count = obj.order_set.count()
