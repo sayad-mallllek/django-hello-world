@@ -5,6 +5,7 @@ from django.utils.html import format_html
 from orders.models import Order
 from providers.models import DeliveryProvider, ShippingProvider, ShippingSource
 from utils.models import BaseAdminModel
+from django.db.models import Sum
 
 
 # Register your models here.
@@ -89,7 +90,7 @@ class DeliveryProviderAdmin(BaseProvider):
         return format_html('<a href="{}">{} Orders</a>', url, count)
 
     def missing_money_from_provider(self, obj):
-        return f"{obj.order_set.filter(has_received_price=False).count()}$"
+        return f"{obj.order_set.filter(has_received_price=False).aggregate(r=Sum('delivery_charge')).get('r')}$"
 
     # def my_view(self, request):
     #     # ...
