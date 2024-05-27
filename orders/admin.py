@@ -69,6 +69,7 @@ class OrderAdmin(BaseAdminModel):
             {"fields": ("customer",)},
         ),
         ("Order Basket", {"fields": ("order_basket",)}),
+        ("Notes", {"fields": ("notes",)}),
     )
 
 
@@ -158,6 +159,7 @@ class OrderBasketAdmin(BaseAdminModel):
                 )
             },
         ),
+        ("Notes", {"fields": ("notes",)}),
     )
 
     @admin.display(ordering="shipping_provider__name", description="Shipping Provider")
