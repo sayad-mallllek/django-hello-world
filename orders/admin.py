@@ -133,13 +133,17 @@ class OrderBasketAdmin(BaseAdminModel):
         "shipping_source__name",
     )
 
+    readonly_fields = ("get_total_profit",)
+
     fieldsets = (
+        (
+            "Basket Charge",
+            {"fields": ("total_price", "total_paid_price", "get_total_profit")},
+        ),
         (
             "Basket Items",
             {
                 "fields": (
-                    "total_price",
-                    "total_paid_price",
                     "number_of_items",
                     "items_link",
                     "items_weight",
@@ -169,3 +173,7 @@ class OrderBasketAdmin(BaseAdminModel):
     @admin.display(ordering="shipping_source__name", description="Shipping Source")
     def get_shipping_source(self, obj):
         return obj.shipping_source.name
+
+    @admin.display(description="Total Profit")
+    def get_total_profit(self, obj):
+        return obj.total_price - obj.total_paid_price
