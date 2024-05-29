@@ -38,7 +38,7 @@ class Order(BaseModel):
     customer = models.ForeignKey("customers.Customer", on_delete=models.CASCADE)
     order_basket = models.ForeignKey("OrderBasket", on_delete=models.CASCADE)
     delivery_provider = models.ForeignKey(
-        "providers.DeliveryProvider", on_delete=models.CASCADE
+        "providers.DeliveryProvider", on_delete=models.CASCADE, null=True, blank=True
     )
 
     def __str__(self):
