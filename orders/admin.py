@@ -37,7 +37,7 @@ class OrderAdmin(BaseAdminModel):
 
     @admin.display(ordering="delivery_provider__name", description="Delivery Provider")
     def get_delivery_provider(self, obj):
-        return obj.delivery_provider.name
+        return obj.delivery_provider
 
     fieldsets = (
         (
