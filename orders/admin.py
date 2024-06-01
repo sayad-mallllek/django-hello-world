@@ -176,4 +176,8 @@ class OrderBasketAdmin(BaseAdminModel):
 
     @admin.display(description="Total Profit")
     def get_total_profit(self, obj):
+        if obj.total_price is None:
+            return 0
+        if obj.total_paid_price is None:
+            return obj.total_price
         return obj.total_price - obj.total_paid_price
