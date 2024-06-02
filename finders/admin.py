@@ -15,6 +15,7 @@ class CustomAdminSite(admin.AdminSite):
                 views.Overview.as_view(admin=self),
                 name="overview",
             ),
+            path("generate_pdf/", views.generate_pdf, name="generate_pdf"),
         ]
         return custom_urls + admin_urls  # custom urls must be at the beginning
 
