@@ -26,5 +26,5 @@ from finders.admin import admin_site
 
 urlpatterns = [
     path("", admin_site.urls),
-    path("generate_pdf/", views.generate_pdf, name="generate_pdf"),
+    # path("generate_pdf/", views.generate_pdf, name="generate_pdf"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
