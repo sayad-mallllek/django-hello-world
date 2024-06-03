@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.http import FileResponse, HttpResponse
 from reportlab.pdfgen import canvas
+from orders.models import Order
 import io
 
 
@@ -37,6 +38,8 @@ class Overview(views.generic.ListView):
 
     def get(self, request):
         ctx = self.admin.each_context(request)
-        ctx["full_name"] = "Full Name"
+        ctx["total_missing_money"] = (
+            f"{Order.objects.get_missing_money_from_all_providers()}$"
+        )
         ctx["email"] = "Email"
         return render(request, "overview.html", ctx)

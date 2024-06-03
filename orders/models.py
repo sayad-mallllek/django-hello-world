@@ -18,8 +18,27 @@ class OrderBasketStatus(models.TextChoices):
     REJECTED = "rejected"
 
 
+class OrderManager(models.Manager):
+    def get_total_price(self):
+        return self.get_queryset().aggregate(r=models.Sum("total_price")).get("r")
+
+    def get_total_paid_price(self):
+        return self.get_queryset().aggregate(r=models.Sum("total_paid_price")).get("r")
+
+    def get_missing_money_from_all_providers(self):
+        return (
+            self.get_queryset()
+            .filter(has_received_price=False)
+            .aggregate(r=models.Sum("total_price"))
+            .get("r")
+        )
+
+
 # Create your models here.
 class Order(BaseModel):
+
+    objects = OrderManager()
+
     id = models.AutoField(primary_key=True)
     total_price = models.FloatField()
     number_of_items = models.IntegerField()

@@ -2,8 +2,9 @@
 <h1>Hello There</h1>
 
 <dl>
-  <dt>Name:</dt>
-  <dd>{{ full_name }}</dd>
+  <dt>Total Missing Money from all providers:</dt>
+  <dd>{{ total_missing_money }}</dd>
+  <br /> 
   <dt>Email:</dt>
   <dd>{{ email }}</dd>
   <form action="{% url 'generate_pdf' %}" method="POST">
