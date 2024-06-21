@@ -5,6 +5,7 @@ from django.utils.decorators import method_decorator
 from django.http import FileResponse, HttpResponse
 from reportlab.pdfgen import canvas
 from orders.models import Order
+from expenses.models import Capital
 import io
 
 
@@ -38,6 +39,12 @@ class Overview(views.generic.ListView):
 
     def get(self, request):
         ctx = self.admin.each_context(request)
+        
+        ctx["capital"] = Capital.load()
+        
+        ctx["total_money_received_from_orders"] = (
+            f"{Order.objects.get_all_received_money_from_orders()}$"
+        )
         ctx["total_missing_money"] = (
             f"{Order.objects.get_missing_money_from_all_providers()}$"
         )

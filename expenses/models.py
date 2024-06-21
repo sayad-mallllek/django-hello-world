@@ -23,8 +23,10 @@ class Capital(BaseModel):
     @classmethod
     def load(cls):
         obj, created = cls.objects.get_or_create(pk=1, amount=0)
-        print(created)
         return obj
+    
+    def __str__(self):
+        return f"{self.amount}$"
 
 
 class Expense(BaseModel):

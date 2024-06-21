@@ -32,6 +32,14 @@ class OrderManager(models.Manager):
             .aggregate(r=models.Sum("total_price"))
             .get("r")
         )
+        
+    def get_all_received_money_from_orders(self):
+         return (
+            self.get_queryset()
+            .filter(has_received_price=True)
+            .aggregate(r=models.Sum("customer_delivery_charge"))
+            .get("r")
+        )
 
 
 # Create your models here.
