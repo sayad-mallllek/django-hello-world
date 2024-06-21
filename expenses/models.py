@@ -28,12 +28,25 @@ class Capital(BaseModel):
     def __str__(self):
         return f"{self.amount}$"
 
+    def __str__(self):
+        return f"{self.amount}$"
+
+
+class ExpenseCategory(BaseModel):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
 
 class Expense(BaseModel):
     name = models.CharField(max_length=100)
     amount = models.FloatField()
     date = models.DateField(null=True, blank=True)
-    category = models.CharField(null=True, blank=True, max_length=100)
+    # category = models.CharField(null=True, blank=True, max_length=100)
+    category = models.ForeignKey(
+        ExpenseCategory, on_delete=models.CASCADE, null=True, blank=True
+    )
     description = models.TextField(null=True, blank=True)
 
     def __str__(self):
