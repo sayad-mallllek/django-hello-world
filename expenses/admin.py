@@ -8,6 +8,7 @@ from django.db import models
 from reportlab.pdfgen import canvas
 from weasyprint import HTML
 import tempfile
+import datetime
 
 from expenses.models import Expense, ExpenseCategory, Capital
 from utils.models import BaseAdminModel
@@ -42,9 +43,7 @@ class ExpenseAdmin(BaseAdminModel):
             "pdf/expense_invoice.html",
             {
                 "expenses": expenses,
-                "total_expenses": expenses.aggregate(r=models.Sum("amount")).get(
-                    "r"
-                ),
+                "total_expenses": expenses.aggregate(r=models.Sum("amount")).get("r"),
             },
         )
 
@@ -83,23 +82,32 @@ class ExpenseAdmin(BaseAdminModel):
         return super().response_change(request, obj)
 
     def print_as_pdf(self, request, queryset):
+
+        # Render the HTML template with the expense data
+
+        html_string = render_to_string(
+            "pdf/expense_invoice.html",
+            {
+                "expenses": queryset,
+                "total_expenses": queryset.aggregate(r=models.Sum("amount")).get("r"),
+            },
+        )
+
+        # Create a temporary file to hold the PDF
+        with tempfile.NamedTemporaryFile(delete=True) as output:
+            # Convert HTML string to PDF
+            HTML(string=html_string).write_pdf(output.name)
+
+            # Read the generated PDF
+            output.seek(0)
+            pdf = output.read()
+
         # Create an HttpResponse with PDF headers
-        response = HttpResponse(content_type="application/pdf")
-        response["Content-Disposition"] = 'attachment; filename="selected-items.pdf"'
+        response = HttpResponse(pdf, content_type="application/pdf")
+        response["Content-Disposition"] = (
+            f'attachment; filename="expenses_{datetime.datetime.now()}.pdf"'
+        )
 
-        # Create a PDF object, using the response object as its "file."
-        p = canvas.Canvas(response)
-
-        # Start writing PDF content
-        y = 800  # Starting Y position
-        for obj in queryset:
-            p.drawString(
-                100, y, str(obj)
-            )  # Example: Print the string representation of each object
-            y -= 100  # Move to the next line
-
-        p.showPage()
-        p.save()
         return response
 
     print_as_pdf.short_description = "Print selected items as PDF"
