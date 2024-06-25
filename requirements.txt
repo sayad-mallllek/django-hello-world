@@ -8,6 +8,7 @@ cssselect2==0.7.0
 distlib==0.3.8
 dj-database-url==2.1.0
 Django==4.2.13
+django-admin-inline-paginator==0.4.0
 django-better-admin-arrayfield==1.4.2
 django-environ==0.11.2
 django-jsonform==2.22.0
