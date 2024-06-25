@@ -24,5 +24,8 @@
       "dest": "finders/wsgi.py"
     }
   ],
+  "functions": {
+    "*": { "maxDuration": 30 }
+  },
   "outputDirectory": "staticfiles_build"
 }
