@@ -19,6 +19,7 @@ class ShippingProviderAdmin(BaseProvider):
     model = ShippingProvider
 
 
+# Some test to deploy
 class OrderDeliverProviderInline(admin.StackedInline):
     model = Order
     extra = 0
