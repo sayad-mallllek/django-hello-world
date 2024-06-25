@@ -7,7 +7,9 @@ from django.template.loader import render_to_string
 from django.db import models
 from reportlab.pdfgen import canvas
 import tempfile
+from django.shortcuts import render
 import datetime
+import pdfkit
 
 from expenses.models import Expense, ExpenseCategory, Capital
 from utils.models import BaseAdminModel
@@ -36,27 +38,19 @@ class ExpenseAdmin(BaseAdminModel):
         except Expense.DoesNotExist:
             return HttpResponse("Expense not found", status=404)
 
-        # Render the HTML template with the expense data
+        context = {
+            "expenses": expenses,
+            "total_expenses": expenses.aggregate(r=models.Sum("amount")).get("r"),
+        }
 
-        html_string = render_to_string(
-            "pdf/expense_invoice.html",
-            {
-                "expenses": expenses,
-                "total_expenses": expenses.aggregate(r=models.Sum("amount")).get("r"),
-            },
-        )
+        # Render the HTML template to a string with the expense data
+        rendered_html = render_to_string("pdf/expense_invoice.html", context)
 
-        # Create a temporary file to hold the PDF
-        with tempfile.NamedTemporaryFile(delete=True) as output:
-            # Convert HTML string to PDF
-            HTML(string=html_string).write_pdf(output.name)
-
-            # Read the generated PDF
-            output.seek(0)
-            pdf = output.read()
+        # Generate PDF in memory
+        pdf_bytes = pdfkit.from_string(rendered_html, False)
 
         # Create an HttpResponse with PDF headers
-        response = HttpResponse(pdf, content_type="application/pdf")
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
         response["Content-Disposition"] = (
             f'attachment; filename="expense_{object_id}.pdf"'
         )
