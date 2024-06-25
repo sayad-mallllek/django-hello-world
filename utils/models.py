@@ -27,6 +27,7 @@ class BaseModel(models.Model):
 
 class BaseAdminModel(admin.ModelAdmin, DynamicArrayMixin):
     readonly_fields = ("created_at", "updated_at")
+    list_per_page = 25
 
     # def get_queryset(self, request):
     #     qs = super().get_queryset(request)
