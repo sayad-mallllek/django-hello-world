@@ -3,6 +3,7 @@ from django.db import models
 from django.db.models import Manager, QuerySet
 from django.contrib import admin
 from django_better_admin_arrayfield.admin.mixins import DynamicArrayMixin
+from django_admin_inline_paginator.admin import InlinePaginated
 
 
 class AppManager(Manager):
@@ -34,9 +35,10 @@ class BaseAdminModel(admin.ModelAdmin, DynamicArrayMixin):
     #     return qs.exclude(deleted_at=None)
 
 
-class BaseAdminInline(admin.StackedInline):
+class BaseAdminInline(InlinePaginated, admin.StackedInline):
     readonly_fields = ("created_at", "updated_at")
     classes = ["collapse"]
+    per_page = 10
 
     # def get_queryset(self, request):
     #     qs = super().get_queryset(request)

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_better_admin_arrayfield",
+    "django_admin_inline_paginator",
     # "finders.apps.MyAdminConfig",
     "rest_framework",
     "customers",
