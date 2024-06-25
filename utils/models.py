@@ -38,7 +38,7 @@ class BaseAdminModel(admin.ModelAdmin, DynamicArrayMixin):
 class BaseAdminInline(InlinePaginated, admin.StackedInline):
     readonly_fields = ("created_at", "updated_at")
     classes = ["collapse"]
-    per_page = 10
+    per_page = 5
 
     # def get_queryset(self, request):
     #     qs = super().get_queryset(request)
