@@ -5,17 +5,12 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.template.loader import render_to_string
 from django.db import models
-from reportlab.pdfgen import canvas
-import tempfile
-from django.shortcuts import render
+from xhtml2pdf import pisa
+from io import BytesIO
 import datetime
-import pdfkit
 
 from expenses.models import Expense, ExpenseCategory, Capital
 from utils.models import BaseAdminModel
-
-
-# Register your models here.
 
 
 @admin.register(ExpenseCategory)
@@ -43,19 +38,26 @@ class ExpenseAdmin(BaseAdminModel):
             "total_expenses": expenses.aggregate(r=models.Sum("amount")).get("r"),
         }
 
-        # Render the HTML template to a string with the expense data
-        rendered_html = render_to_string("pdf/expense_invoice.html", context)
+        # Render the HTML template with context data
+        html = render_to_string("pdf/expense_invoice.html", context)
 
-        # Generate PDF in memory
-        pdf_bytes = pdfkit.from_string(rendered_html, False)
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-        # Create an HttpResponse with PDF headers
-        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        # Create a BytesIO buffer for the PDF
+        response = HttpResponse(content_type="application/pdf")
         response["Content-Disposition"] = (
-            f'attachment; filename="expense_{object_id}.pdf"'
+            f'attachment; filename="expense_{timestamp}.pdf"'
         )
 
-        return response
+        # Convert HTML content to PDF
+        result = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+
+        if not pdf.err:
+            response.write(result.getvalue())
+            return response
+        else:
+            return HttpResponse("Error rendering PDF", status=400)
 
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         if "export_pdf" in request.GET:
@@ -75,33 +77,31 @@ class ExpenseAdmin(BaseAdminModel):
         return super().response_change(request, obj)
 
     def print_as_pdf(self, request, queryset):
-        pass
-        # Render the HTML template with the expense data
+        context = {
+            "expenses": queryset,
+            "total_expenses": queryset.aggregate(r=models.Sum("amount")).get("r"),
+        }
 
-        # html_string = render_to_string(
-        #     "pdf/expense_invoice.html",
-        #     {
-        #         "expenses": queryset,
-        #         "total_expenses": queryset.aggregate(r=models.Sum("amount")).get("r"),
-        #     },
-        # )
+        # Render the HTML template with context data
+        html = render_to_string("pdf/expense_invoice.html", context)
 
-        # # Create a temporary file to hold the PDF
-        # with tempfile.NamedTemporaryFile(delete=True) as output:
-        #     # Convert HTML string to PDF
-        #     HTML(string=html_string).write_pdf(output.name)
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-        #     # Read the generated PDF
-        #     output.seek(0)
-        #     pdf = output.read()
+        # Create a BytesIO buffer for the PDF
+        response = HttpResponse(content_type="application/pdf")
+        response["Content-Disposition"] = (
+            f'attachment; filename="expense_{timestamp}.pdf"'
+        )
 
-        # # Create an HttpResponse with PDF headers
-        # response = HttpResponse(pdf, content_type="application/pdf")
-        # response["Content-Disposition"] = (
-        #     f'attachment; filename="expenses_{datetime.datetime.now()}.pdf"'
-        # )
+        # Convert HTML content to PDF
+        result = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
 
-        # return response
+        if not pdf.err:
+            response.write(result.getvalue())
+            return response
+        else:
+            return HttpResponse("Error rendering PDF", status=400)
 
     print_as_pdf.short_description = "Print selected items as PDF"
 

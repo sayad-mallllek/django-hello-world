@@ -5,27 +5,44 @@
     <title>Expense Report</title>
     <style>
       body {
-        font-family: Arial, sans-serif;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
       }
       .invoice {
-        margin: 50px auto;
-        padding: 20px;
-        width: 80%;
-        background: #f9f9f9;
-        border: 1px solid #ccc;
+        max-width: 800px;
+        margin: 20px auto;
+        background: #fff;
+        border: 1px solid #ddd;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       }
-      .invoice-header {
+      .invoice-header,
+      .invoice-footer {
+        background-color: #007bff;
+        color: #ffffff;
+        padding: 10px 20px;
         text-align: center;
-        margin-bottom: 20px;
       }
-      .expense-list {
-        list-style-type: none;
-        padding: 0;
+      .invoice-body {
+        padding: 20px;
       }
-      .expense-item {
-        border: 1px solid #ccc;
-        margin: 10px 0;
-        padding: 10px;
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      .total {
+        text-align: right;
       }
     </style>
   </head>
@@ -34,23 +51,35 @@
       <div class="invoice-header">
         <h1>Expense Report</h1>
       </div>
-      <ul class="expense-list">
-        {% for expense in expenses %}
-          <li class="expense-item">
-            <strong>Name:</strong> {{ expense.name }}<br />
-            <strong>Amount:</strong> ${{ expense.amount }}<br />
-            <strong>Date:</strong> {{ expense.date }}<br />
-            <strong>Category:</strong> {{ expense.category }}<br />
-            {% if expense.description %}
-              <strong>Description:</strong> {{ expense.description }}
-            {% endif %}
-          </li>
-        {% endfor %}
-      </ul>
-      <p>
-        Total Expenses: <strong>${{ total_expenses }}</strong>
-      </p>
-      <p>Thank you for using our service!</p>
+      <div class="invoice-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for expense in expenses %}
+              <tr>
+                <td>{{ expense.name }}</td>
+                <td>${{ expense.amount }}</td>
+                <td>{{ expense.date }}</td>
+                <td>{{ expense.category|default:' ' }}</td>
+                <td>{{ expense.description|default:' ' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="invoice-footer">
+        <p>
+          Total Expenses: <strong>${{ total_expenses }}</strong>
+        </p>
+      </div>
     </div>
   </body>
 </html>
