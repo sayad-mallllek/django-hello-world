@@ -34,6 +34,7 @@ class OrderDeliverProviderInline(admin.StackedInline):
                 "fields": (
                     "bill_id",
                     "status",
+                    "customer",
                     # "get_order_url",
                 ),
             },
@@ -42,6 +43,7 @@ class OrderDeliverProviderInline(admin.StackedInline):
             "Delivery Charges",
             {
                 "fields": (
+                    "total_price",
                     "delivered_at",
                     "has_received_price",
                     "delivery_charge",

@@ -24,9 +24,6 @@ class Capital(BaseModel):
     def load(cls):
         obj, created = cls.objects.get_or_create(pk=1, amount=0)
         return obj
-    
-    def __str__(self):
-        return f"{self.amount}$"
 
     def __str__(self):
         return f"{self.amount}$"

@@ -32,9 +32,9 @@ class OrderManager(models.Manager):
             .aggregate(r=models.Sum("total_price"))
             .get("r")
         )
-        
+
     def get_all_received_money_from_orders(self):
-         return (
+        return (
             self.get_queryset()
             .filter(has_received_price=True)
             .aggregate(r=models.Sum("customer_delivery_charge"))
@@ -69,7 +69,7 @@ class Order(BaseModel):
     )
 
     def __str__(self):
-        return f"{self.id}"
+        return f"#{self.id}"
 
 
 class OrderBasket(BaseModel):
