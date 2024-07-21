@@ -1,6 +1,9 @@
+from typing import Any
 from django.contrib import admin
+from django.http import HttpRequest
+from django.http.response import HttpResponse
 
-from orders.models import Order, OrderBasket
+from orders.models import Order, OrderBasket, OrderBasketStatus
 from utils.models import BaseAdminModel, BaseAdminInline
 
 
@@ -38,6 +41,20 @@ class OrderAdmin(BaseAdminModel):
     @admin.display(ordering="delivery_provider__name", description="Delivery Provider")
     def get_delivery_provider(self, obj):
         return obj.delivery_provider
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        # Check if all orders in the basket have received prices
+        order_basket = (
+            obj.order_basket
+        )  # Assuming `order_basket` is the FK to OrderBasket in Order model
+        orders = (
+            order_basket.order_set.all()
+        )  # Assuming a related_name of `order_set` from OrderBasket to Order
+        if orders.exists() and all(order.has_received_price for order in orders):
+            # If all orders have received prices, set the basket status to COMPLETED
+            order_basket.status = OrderBasketStatus.COMPLETED
+            order_basket.save()
 
     fieldsets = (
         (
