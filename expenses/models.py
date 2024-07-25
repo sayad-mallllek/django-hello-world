@@ -48,3 +48,23 @@ class Expense(BaseModel):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            # Instance is being updated
+            old_amount = Expense.objects.get(pk=self.pk).amount
+        else:
+            # Instance is being created
+            old_amount = 0
+
+        new_amount = self.amount
+        amount_difference = old_amount - new_amount
+
+        # You can now use amount_difference as needed
+        # For example, logging the difference
+        if amount_difference != 0:
+            capital = Capital.objects.get(pk=1)
+            capital.amount += amount_difference
+            capital.save()
+
+        super().save(*args, **kwargs)

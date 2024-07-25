@@ -1,5 +1,6 @@
 from django.db import models
 
+from expenses.models import Capital
 from utils.models import BaseModel
 
 
@@ -71,6 +72,33 @@ class Order(BaseModel):
     def __str__(self):
         return f"#{self.id}"
 
+    def save(self, *args, **kwargs):
+        old_obj = Order.objects.filter(pk=self.pk).first()
+        if old_obj:
+
+            # Instance is being updated
+            old_charge_amount = old_obj.delivery_charge or 0
+            old_total_price = old_obj.total_price if old_obj.has_received_price else 0
+        else:
+            # Instance is being created
+            old_charge_amount = 0
+            old_total_price = 0
+
+        new_charge_amount = self.delivery_charge or 0
+        new_total_price = self.total_price if self.has_received_price else 0
+
+        amount_difference = old_charge_amount - new_charge_amount
+        amount_difference += new_total_price - old_total_price
+
+        # You can now use amount_difference as needed
+        # For example, logging the difference
+        if amount_difference != 0:
+            capital = Capital.objects.get(pk=1)
+            capital.amount += amount_difference
+            capital.save()
+
+        super().save(*args, **kwargs)
+
 
 class OrderBasket(BaseModel):
     id = models.AutoField(primary_key=True)
@@ -98,3 +126,29 @@ class OrderBasket(BaseModel):
 
     def __str__(self):
         return f"{self.id} - {self.shipped_at}"
+
+    def save(self, *args, **kwargs):
+        old_obj = OrderBasket.objects.filter(pk=self.pk).first()
+        if old_obj:
+            # Instance is being updated
+            old_amount = old_obj.shipping_charge or 0
+            # old_total_price = old_obj.total_price
+        else:
+            # Instance is being created
+            old_amount = 0
+            # old_total_price = 0
+
+        new_amount = self.shipping_charge or 0
+        # new_total_price = self.total_price
+
+        amount_difference = old_amount - new_amount
+        # amount_difference += new_total_price - old_total_price
+
+        # You can now use amount_difference as needed
+        # For example, logging the difference
+        if amount_difference != 0:
+            capital = Capital.objects.get(pk=1)
+            capital.amount += amount_difference
+            capital.save()
+
+        super().save(*args, **kwargs)
