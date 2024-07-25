@@ -73,6 +73,11 @@ class Order(BaseModel):
         return f"#{self.id}"
 
     def save(self, *args, **kwargs):
+
+        from_delete = kwargs.pop("from_delete", False)
+        if from_delete:
+            return super().save(*args, **kwargs)
+
         old_obj = Order.objects.filter(pk=self.pk).first()
         if old_obj:
 
@@ -136,6 +141,11 @@ class OrderBasket(BaseModel):
         return f"{self.id} - {self.shipped_at}"
 
     def save(self, *args, **kwargs):
+
+        from_delete = kwargs.pop("from_delete", False)
+        if from_delete:
+            return super().save(*args, **kwargs)
+
         old_obj = OrderBasket.objects.filter(pk=self.pk).first()
         if old_obj:
             # Instance is being updated

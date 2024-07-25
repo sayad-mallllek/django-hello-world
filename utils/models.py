@@ -1,4 +1,4 @@
-from datetime import timezone
+from datetime import datetime
 from django.db import models
 from django.db.models import Manager, QuerySet
 from django.contrib import admin
@@ -21,8 +21,8 @@ class BaseModel(models.Model):
     def delete(self):
         """Mark the record as deleted instead of deleting it"""
 
-        self.deleted_at = timezone.now()
-        self.save()
+        self.deleted_at = datetime.now()
+        self.save(from_delete=True)  # type: ignore
 
 
 class BaseAdminModel(admin.ModelAdmin, DynamicArrayMixin):

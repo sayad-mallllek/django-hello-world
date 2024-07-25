@@ -50,6 +50,11 @@ class Expense(BaseModel):
         return self.name
 
     def save(self, *args, **kwargs):
+
+        from_delete = kwargs.pop("from_delete", False)
+        if from_delete:
+            return super().save(*args, **kwargs)
+
         if self.pk:
             # Instance is being updated
             old_amount = Expense.objects.get(pk=self.pk).amount
