@@ -1,52 +1,40 @@
-{% extends "admin/change_form.html" %}
+{% extends 'admin/change_form.html' %}
 
 {% block extrahead %}
-    {{ block.super }}
-    <script
-  src="https://code.jquery.com/jquery-3.7.1.min.js"
-  integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
-  crossorigin="anonymous"></script>
-<script>
+  {{ block.super }}
+  {% comment %} <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <script>
     jQuery(function ($) {
-        var linkStyle =
-          'cursor: pointer; color: #fff; border-radius: 4px; font-weight: 400; padding: 5px 10px; background: #417690; border: none;';
-      
-        // Only for stacked inlines
-        $('div.inline-group div.inline-related:not(.tabular)').each(function () {
-            const $h3 = $(this.querySelector('h3'));
-            const $fieldsets = $(this.querySelectorAll('fieldset')); // Changed to querySelectorAll
-          
-            const fsErrorsExist = $fieldsets.children('.errors').length; // Loop through all fieldsets
-            const initialButtonText = fsErrorsExist ? gettext('Hide') : gettext('Show');
-          
-            const $button = $(
-              $.parseHTML(
-                '<a role="button" style="' +
-                  linkStyle +
-                  '" class="stacked_collapse-toggle">' +
-                  initialButtonText +
-                  '</a> '
-              )
-            );
-          
-            // Don't collapse initially if any fieldset contains errors
-            let collapseClass = fsErrorsExist ? 'stacked_collapse' : 'stacked_collapse collapsed';
-            $fieldsets.addClass(collapseClass); // Apply class to all fieldsets
-          
-            $h3.prepend($button);
-          });
-      
-        // Hide/Show button click
-        $('div.inline-group').on('click', '.stacked_collapse-toggle', function () {
-          const $fs = $(this).parents('.inline-related').children('fieldset')
-          if (!$fs.hasClass('collapsed')) {
-            $fs.addClass('collapsed');
-            this.innerHTML = gettext('Show');
-          } else {
-            $fs.removeClass('collapsed');
-            this.innerHTML = gettext('Hide');
-          }
-        })
-      });
-</script>
+      var linkStyle = 'cursor: pointer; color: #fff; border-radius: 4px; font-weight: 400; padding: 5px 10px; background: #417690; border: none;'
+    
+      // Only for stacked inlines
+      $('div.inline-group div.inline-related:not(.tabular)').each(function () {
+        const $h3 = $(this.querySelector('h3'))
+        const $fieldsets = $(this.querySelectorAll('fieldset')) // Changed to querySelectorAll
+    
+        const fsErrorsExist = $fieldsets.children('.errors').length // Loop through all fieldsets
+        const initialButtonText = fsErrorsExist ? gettext('Hide') : gettext('Show')
+    
+        const $button = $($.parseHTML('<a role="button" style="' + linkStyle + '" class="stacked_collapse-toggle">' + initialButtonText + '</a> '))
+    
+        // Don't collapse initially if any fieldset contains errors
+        let collapseClass = fsErrorsExist ? 'stacked_collapse' : 'stacked_collapse collapsed'
+        $fieldsets.addClass(collapseClass) // Apply class to all fieldsets
+    
+        $h3.prepend($button)
+      })
+    
+      // Hide/Show button click
+      $('div.inline-group').on('click', '.stacked_collapse-toggle', function () {
+        const $fs = $(this).parents('.inline-related').children('fieldset')
+        if (!$fs.hasClass('collapsed')) {
+          $fs.addClass('collapsed')
+          this.innerHTML = gettext('Show')
+        } else {
+          $fs.removeClass('collapsed')
+          this.innerHTML = gettext('Hide')
+        }
+      })
+    })
+  </script> {% endcomment %}
 {% endblock %}

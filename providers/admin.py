@@ -103,5 +103,5 @@ class ShippingSourceAdmin(BaseAdminModel):
     search_fields = ("name",)
 
 
-class Media:
-    js = ["js/collapsed-stacked-inlines.js"]
+# class Media:
+#     js = ["js/collapsed-stacked-inlines.js"]
