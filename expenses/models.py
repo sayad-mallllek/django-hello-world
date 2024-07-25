@@ -68,3 +68,10 @@ class Expense(BaseModel):
             capital.save()
 
         super().save(*args, **kwargs)
+
+    def delete(self):
+        capital = Capital.objects.get(pk=1)
+        capital.amount += self.amount
+        capital.save()
+
+        return super().delete()

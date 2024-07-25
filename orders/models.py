@@ -99,6 +99,14 @@ class Order(BaseModel):
 
         super().save(*args, **kwargs)
 
+    def delete(self):
+        capital = Capital.objects.get(pk=1)
+        capital.amount += self.delivery_charge or 0
+        capital.amount -= self.total_price if self.has_received_price else 0
+        capital.save()
+
+        return super().delete()
+
 
 class OrderBasket(BaseModel):
     id = models.AutoField(primary_key=True)
@@ -154,3 +162,10 @@ class OrderBasket(BaseModel):
             capital.save()
 
         super().save(*args, **kwargs)
+
+    def delete(self):
+        capital = Capital.objects.get(pk=1)
+        capital.amount += (self.total_paid_price or 0) + (self.shipping_charge or 0)
+        capital.save()
+
+        return super().delete()
