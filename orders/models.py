@@ -131,14 +131,16 @@ class OrderBasket(BaseModel):
         old_obj = OrderBasket.objects.filter(pk=self.pk).first()
         if old_obj:
             # Instance is being updated
-            old_amount = old_obj.shipping_charge or 0
+            old_amount = (old_obj.total_paid_price or 0) + (
+                old_obj.shipping_charge or 0
+            )
             # old_total_price = old_obj.total_price
         else:
             # Instance is being created
             old_amount = 0
             # old_total_price = 0
 
-        new_amount = self.shipping_charge or 0
+        new_amount = (self.total_paid_price or 0) + (self.shipping_charge or 0)
         # new_total_price = self.total_price
 
         amount_difference = old_amount - new_amount
