@@ -92,7 +92,7 @@ class DeliveryProviderAdmin(BaseProvider):
         return format_html('<a href="{}">{} Orders</a>', url, count)
 
     def missing_money_from_provider(self, obj):
-        return f"{obj.order_set.filter(has_received_price=False).aggregate(r=Sum('total_price'))}$"
+        return f"{obj.order_set.filter(has_received_price=False).aggregate(r=Sum('total_price')).get("r")}$"
 
 
 @admin.register(ShippingSource)
