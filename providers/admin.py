@@ -17,6 +17,7 @@ class BaseProvider(BaseAdminModel):
 @admin.register(ShippingProvider)
 class ShippingProviderAdmin(BaseProvider):
     model = ShippingProvider
+    list_display = ("name", "phone_number", "points")
 
 
 class OrderDeliverProviderInline(admin.StackedInline):

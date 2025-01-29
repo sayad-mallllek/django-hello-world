@@ -7,14 +7,14 @@ from utils.models import BaseAdminModel
 @admin.register(Customer)
 class CustomerAdmin(BaseAdminModel):
     model = Customer
-    list_display = ("full_name",)
+    list_display = ("full_name", "points")
     search_fields = ("full_name",)
     list_filter = ("full_name",)
 
     fieldsets = (
         (
             "Customer Info",
-            {"fields": ("full_name", "phone_number", "address", "email")},
+            {"fields": ("full_name", "phone_number", "address", "email", "points")},
         ),
         ("Notes", {"fields": ("notes",)}),
     )
