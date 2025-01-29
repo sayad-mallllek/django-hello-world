@@ -10,6 +10,7 @@ class Customer(BaseModel):
     address = models.CharField(max_length=255, null=True, blank=True)
     email = models.EmailField(max_length=255, null=True, blank=True)
     notes = ArrayField(models.CharField(max_length=255))
+    points = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.full_name} - {self.phone_number}"

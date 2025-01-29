@@ -22,6 +22,7 @@ class ShippingSource(BaseModel):
 class ShippingProvider(BaseProvider):
     price_per_kg = models.FloatField()
     address = models.CharField(max_length=255)
+    points = models.IntegerField(default=0)
 
 
 class DeliveryProvider(BaseProvider):
