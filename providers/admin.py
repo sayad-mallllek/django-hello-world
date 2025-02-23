@@ -4,6 +4,8 @@ from django.utils.http import urlencode
 from django.utils.html import format_html
 from orders.models import Order
 from providers.models import DeliveryProvider, ShippingProvider, ShippingSource
+
+from django_admin_inline_paginator_plus.admin import StackedInlinePaginated
 from utils.models import BaseAdminModel
 from django.db.models import Sum
 
@@ -20,8 +22,9 @@ class ShippingProviderAdmin(BaseProvider):
     list_display = ("name", "phone_number", "points")
 
 
-class OrderDeliverProviderInline(admin.StackedInline):
+class OrderDeliverProviderInline(StackedInlinePaginated):
     model = Order
+    per_page = 5
     extra = 0
 
     classes = [
