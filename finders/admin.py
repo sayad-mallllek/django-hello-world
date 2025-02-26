@@ -1,7 +1,16 @@
 from django.contrib import admin
 from django.urls import path
+from django.contrib.auth.decorators import user_passes_test
 
 from finders import views
+
+
+# Define superuser check decorator
+def superuser_required(view_func):
+    decorated_view = user_passes_test(
+        lambda u: u.is_authenticated and u.is_superuser, login_url="admin:login"
+    )(view_func)
+    return decorated_view
 
 
 class CustomAdminSite(admin.AdminSite):
@@ -12,7 +21,7 @@ class CustomAdminSite(admin.AdminSite):
         custom_urls = [
             path(
                 "overview/",
-                views.Overview.as_view(admin=self),
+                superuser_required(views.Overview.as_view(admin=self)),
                 name="overview",
             ),
             path("generate_pdf/", views.generate_pdf, name="generate_pdf"),
@@ -25,21 +34,22 @@ class CustomAdminSite(admin.AdminSite):
 
     def get_app_list(self, request):
         app_list = super().get_app_list(request)
-        app_list += [
-            {
-                "name": "Overview",
-                "app_label": "Overview",
-                # "app_url": "/admin/test_view",
-                "models": [
-                    {
-                        "name": "Overview",
-                        "object_name": "overview",
-                        "admin_url": "/overview",
-                        "view_only": True,
-                    }
-                ],
-            }
-        ]
+        if request.user.is_superuser:
+            app_list += [
+                {
+                    "name": "Overview",
+                    "app_label": "Overview",
+                    # "app_url": "/admin/test_view",
+                    "models": [
+                        {
+                            "name": "Overview",
+                            "object_name": "overview",
+                            "admin_url": "/overview",
+                            "view_only": True,
+                        }
+                    ],
+                }
+            ]
         return app_list
 
 

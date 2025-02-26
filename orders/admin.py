@@ -195,6 +195,13 @@ class OrderBasketAdmin(BaseAdminModel):
         ("Notes", {"fields": ("notes",)}),
     )
 
+    def get_fieldsets(self, request, obj=...):
+        fieldsets = super().get_fieldsets(request, obj)
+        if not request.user.is_superuser:
+            # remove total_paid_price and get_total_profit fields
+            fieldsets[0][1]["fields"] = ("total_price",)
+        return fieldsets
+
     @admin.display(ordering="shipping_provider__name", description="Shipping Provider")
     def get_shipping_provider(self, obj):
         return obj.shipping_provider.name

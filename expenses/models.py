@@ -22,8 +22,14 @@ class Capital(BaseModel):
 
     @classmethod
     def load(cls):
-        obj, created = cls.objects.get_or_create(pk=1, amount=0)
-        return obj
+        try:
+            # First try to get existing capital
+            return cls.objects.get(pk=1)
+        except cls.DoesNotExist:
+            # If doesn't exist, create new one
+            obj = cls(id=1, amount=0)
+            obj.save()
+            return obj
 
     def __str__(self):
         return f"{self.amount}$"
