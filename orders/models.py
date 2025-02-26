@@ -115,6 +115,7 @@ class Order(BaseModel):
 
 class OrderBasket(BaseModel):
     id = models.AutoField(primary_key=True)
+    tracking_number = models.CharField(max_length=255, null=True, blank=True)
     total_price = models.FloatField()
     total_paid_price = models.FloatField(null=True, blank=True)
     number_of_items = models.IntegerField()

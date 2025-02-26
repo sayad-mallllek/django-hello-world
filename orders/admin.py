@@ -147,13 +147,14 @@ class OrderBasketAdmin(BaseAdminModel):
     model = OrderBasket
     list_display = (
         "id",
+        "tracking_number",
         "get_shipping_provider",
         "get_shipping_source",
         "status",
         "total_price",
         "shipped_at",
     )
-    search_fields = ("id",)
+    search_fields = ("id", "tracking_number")
     list_filter = (
         ("shipped_at", admin.DateFieldListFilter),
         ("received_at", admin.DateFieldListFilter),
@@ -165,6 +166,7 @@ class OrderBasketAdmin(BaseAdminModel):
     readonly_fields = ("get_total_profit",)
 
     fieldsets = (
+        ("Tracking Number", {"fields": ("tracking_number",)}),
         (
             "Basket Charge",
             {"fields": ("total_price", "total_paid_price", "get_total_profit")},
