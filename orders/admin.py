@@ -212,6 +212,25 @@ class OrderBasketAdmin(BaseAdminModel):
             )
         return fieldsets
 
+    def get_readonly_fields(self, request, obj=...):
+        readonly_fields = super().get_readonly_fields(request, obj)
+        print(request.user, request.user.is_superuser)
+        if not request.user.is_superuser:
+            readonly_fields = readonly_fields + ("total_price",)
+        return readonly_fields
+
+    def get_list_display(self, request):
+        list_display = super().get_list_display(request)
+        if not request.user.is_superuser:
+            list_display = list_display[:2] + list_display[3:]
+        return list_display
+
+    def get_list_filter(self, request):
+        list_filter = super().get_list_filter(request)
+        if not request.user.is_superuser:
+            list_filter = list_filter[:3] + list_filter[4:]
+        return list_filter
+
     @admin.display(ordering="shipping_provider__name", description="Shipping Provider")
     def get_shipping_provider(self, obj):
         return obj.shipping_provider.name
