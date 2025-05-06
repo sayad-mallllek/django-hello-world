@@ -24,6 +24,16 @@ class CustomAdminSite(admin.AdminSite):
                 superuser_required(views.Overview.as_view(admin=self)),
                 name="overview",
             ),
+            path(
+                "range-summary/",
+                superuser_required(views.RangeSummary.as_view(admin=self)),
+                name="range_summary",
+            ),
+             path(
+                "export-range-summary/",
+                superuser_required(views.export_range_summary),
+                name="export_range_summary",
+            ),
             path("generate_pdf/", views.generate_pdf, name="generate_pdf"),
         ]
         return custom_urls + admin_urls  # custom urls must be at the beginning
@@ -45,6 +55,12 @@ class CustomAdminSite(admin.AdminSite):
                             "name": "Overview",
                             "object_name": "overview",
                             "admin_url": "/overview",
+                            "view_only": True,
+                        },
+                        {
+                            "name": "Range Summary",
+                            "object_name": "range_summary",
+                            "admin_url": "/range-summary",
                             "view_only": True,
                         }
                     ],

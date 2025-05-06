@@ -1,0 +1,122 @@
+<!-- filepath: /home/bob/Others/Repos/django-hello-world/templates/range-summary.html -->
+{% extends 'admin/base_site.html' %} {% load admin_urls %} {% block content %}
+<h1>Orders Date Range Summary</h1>
+
+<div class="module">
+  <form method="get" action="">
+    <div class="form-row">
+      <div style="display: flex; gap: 20px; margin-bottom: 20px">
+        <div>
+          <label for="id_date_from">From date:</label>
+          <input
+            type="date"
+            name="date_from"
+            id="id_date_from"
+            value="{{ date_from|date:'Y-m-d' }}"
+          />
+        </div>
+        <div>
+          <label for="id_date_to">To date:</label>
+          <input
+            type="date"
+            name="date_to"
+            id="id_date_to"
+            value="{{ date_to|date:'Y-m-d' }}"
+          />
+        </div>
+        <div>
+          <button type="submit" class="default" style="margin-top: 22px">
+            Filter
+          </button>
+        </div>
+        <div>
+          <button type="submit" class="default" style="margin-top: 22px">
+            Filter
+          </button>
+          {% if orders %}
+          <a
+            href="{% url 'admin:export_range_summary' %}?date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}"
+            class="button"
+            style="
+              margin-top: 22px;
+              margin-left: 10px;
+              background-color: #417690;
+              color: white;
+              padding: 10px 15px;
+              text-decoration: none;
+            "
+          >
+            Export to Excel
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+{% if orders %}
+<div class="results">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Customer</th>
+        <th>Status</th>
+        <th>Total Price</th>
+        <th>Created At</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr class="{% cycle 'row1' 'row2' %}">
+        <td>{{ order.id }}</td>
+        <td>{{ order.customer.full_name }}</td>
+        <td>{{ order.get_status_display }}</td>
+        <td>${{ order.total_price }}</td>
+        <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+        <td>
+          <a href="{% url 'admin:orders_order_change' order.id %}">View</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+<div class="paginator">
+  {% if orders.has_previous %}
+  <a
+    href="?page=1&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}"
+    >« first</a
+  >
+  <a
+    href="?page={{ orders.previous_page_number }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}"
+    >previous</a
+  >
+  {% endif %}
+
+  <span class="this-page">
+    Page {{ orders.number }} of {{ orders.paginator.num_pages }}
+  </span>
+
+  {% if orders.has_next %}
+  <a
+    href="?page={{ orders.next_page_number }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}"
+    >next</a
+  >
+  <a
+    href="?page={{ orders.paginator.num_pages }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}"
+    >last »</a
+  >
+  {% endif %}
+</div>
+
+<p class="paginator">{{ orders.paginator.count }} orders</p>
+{% else %} {% if is_filtered %}
+<p>No orders found in the selected date range.</p>
+{% else %}
+<p>Select a date range to see orders.</p>
+{% endif %} {% endif %} {% endblock %}

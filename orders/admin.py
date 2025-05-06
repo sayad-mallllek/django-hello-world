@@ -240,6 +240,11 @@ class OrderBasketAdmin(BaseAdminModel):
             return obj.total_price
         return obj.total_price - obj.total_paid_price
 
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        print("FORM", form)
+        return form
+
     def save_model(self, request, obj, form, change):
         if change:  # Update case
             old_obj = OrderBasket.objects.get(pk=obj.pk)
