@@ -150,8 +150,11 @@ class OrderBasketAdmin(BaseAdminModel):
         "tracking_number",
         "get_shipping_provider",
         "get_shipping_source",
+        "shipping_charge",
         "status",
         "total_price",
+        "total_paid_price",
+        "get_total_profit",
         "shipped_at",
     )
     search_fields = ("id", "tracking_number")
