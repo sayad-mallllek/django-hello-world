@@ -34,6 +34,16 @@ class CustomAdminSite(admin.AdminSite):
                 superuser_required(views.export_range_summary),
                 name="export_range_summary",
             ),
+            path(
+                "shipping-provider-analyze/",
+                superuser_required(views.ShippingProviderAnalyze.as_view(admin=self)),
+                name="shipping_provider_analyze",
+            ),
+            path(
+                "export-shipping-provider-analyze/",
+                superuser_required(views.export_shipping_provider_analyze),
+                name="export_shipping_provider_analyze",
+            ),
             path("generate_pdf/", views.generate_pdf, name="generate_pdf"),
         ]
         return custom_urls + admin_urls  # custom urls must be at the beginning
@@ -62,7 +72,13 @@ class CustomAdminSite(admin.AdminSite):
                             "object_name": "range_summary",
                             "admin_url": "/range-summary",
                             "view_only": True,
-                        }
+                        },
+                        {
+                            "name": "Shipping Provider Analyze",
+                            "object_name": "shipping_provider_analyze",
+                            "admin_url": "/shipping-provider-analyze",
+                            "view_only": True,
+                        },
                     ],
                 }
             ]

@@ -1,0 +1,78 @@
+<!-- filepath: /home/bob/Others/Repos/django-hello-world/templates/shipping-provider-analyze.html -->
+{% extends 'admin/base_site.html' %} {% load admin_urls %} {% block content %}
+<h1>Shipping Provider Analysis</h1>
+
+<div class="module">
+  <form method="get" action="">
+    <div class="form-row">
+      <div style="display: flex; gap: 20px; margin-bottom: 20px">
+        <div>
+          <label for="id_date_from">From date:</label>
+          <input
+            type="date"
+            name="date_from"
+            id="id_date_from"
+            value="{{ date_from|date:'Y-m-d' }}"
+          />
+        </div>
+        <div>
+          <label for="id_date_to">To date:</label>
+          <input
+            type="date"
+            name="date_to"
+            id="id_date_to"
+            value="{{ date_to|date:'Y-m-d' }}"
+          />
+        </div>
+        <div>
+          <button type="submit" class="default" style="margin-top: 22px">
+            Filter
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+{% if provider_stats %}
+<div class="results">
+  <table>
+    <thead>
+      <tr>
+        <th>Provider Name</th>
+        <th>Total Weight (kg)</th>
+        <th>Order Count</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for provider in provider_stats %}
+      <tr class="{% cycle 'row1' 'row2' %}">
+        <td>{{ provider.provider_name }}</td>
+        <td>{{ provider.total_weight|floatformat:2 }}</td>
+        <td>{{ provider.order_count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="margin-top: 15px">
+    <a
+      href="{% url 'admin:export_shipping_provider_analyze' %}?date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}"
+      class="button"
+      style="
+        margin-top: 10px;
+        background-color: #417690;
+        color: white;
+        padding: 10px 15px;
+        text-decoration: none;
+      "
+    >
+      Export to Excel
+    </a>
+  </div>
+</div>
+{% else %} {% if is_filtered %}
+<p>No shipping provider data found in the selected date range.</p>
+{% else %}
+<p>Select a date range to see shipping provider statistics.</p>
+{% endif %} {% endif %} {% endblock %}
