@@ -165,6 +165,17 @@ class OrderBasketAdmin(BaseAdminModel):
         "shipping_provider__name",
         "shipping_source__name",
     )
+    
+    actions = ["print_to_pdf"]
+    
+    def print_to_pdf(self, request, queryset):
+        selected_ids = ",".join(str(basket.id) for basket in queryset)
+        url = f"/print-order-baskets-pdf/?ids={selected_ids}"
+        return HttpResponse(
+            f'<script>window.open("{url}", "_blank").focus();</script>'
+        )
+    
+    print_to_pdf.short_description = "Print selected order baskets to PDF"
 
     readonly_fields = ("get_total_profit",)
 

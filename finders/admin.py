@@ -45,6 +45,11 @@ class CustomAdminSite(admin.AdminSite):
                 name="export_shipping_provider_analyze",
             ),
             path("generate_pdf/", views.generate_pdf, name="generate_pdf"),
+            path(
+                "print-order-baskets-pdf/",
+                superuser_required(views.print_order_baskets_pdf),
+                name="print_order_baskets_pdf",
+            ),
         ]
         return custom_urls + admin_urls  # custom urls must be at the beginning
 

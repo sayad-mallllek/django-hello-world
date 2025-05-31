@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Order Baskets Summary</title>
+    <style>
+      body {
+        font-family: "Helvetica", "Arial", sans-serif;
+        margin: 0;
+        padding: 20px;
+        color: #333;
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #417690;
+        padding-bottom: 10px;
+      }
+      .header h1 {
+        color: #417690;
+        margin: 0;
+        padding: 0;
+        font-size: 26px;
+      }
+      .header p {
+        color: #666;
+        margin: 5px 0 0;
+        font-size: 14px;
+      }
+      .company-info {
+        margin-bottom: 20px;
+      }
+      .company-name {
+        font-size: 16px;
+        font-weight: bold;
+        color: #417690;
+      }
+      .summary-box {
+        background-color: #f5f5f5;
+        border-radius: 4px;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-left: 4px solid #417690;
+      }
+      .summary-title {
+        margin-top: 0;
+        color: #417690;
+        font-size: 18px;
+      }
+      .summary-data {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+      .summary-item {
+        margin-bottom: 10px;
+        width: 33%;
+      }
+      .summary-item-label {
+        font-size: 12px;
+        color: #666;
+        display: block;
+      }
+      .summary-item-value {
+        font-size: 16px;
+        font-weight: bold;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+      table th {
+        background-color: #417690;
+        color: white;
+        text-align: left;
+        padding: 10px;
+        font-size: 14px;
+      }
+      table td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        font-size: 14px;
+      }
+      table tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      .footer {
+        margin-top: 40px;
+        padding-top: 10px;
+        border-top: 1px solid #ddd;
+        font-size: 12px;
+        color: #666;
+        text-align: center;
+      }
+      .total-row {
+        background-color: #eaf2fa !important;
+        font-weight: bold;
+      }
+      .page-break {
+        page-break-after: always;
+      }
+      @page {
+        size: A4;
+        margin: 1cm;
+      }
+      .section {
+        margin-bottom: 30px;
+      }
+      .text-right {
+        text-align: right;
+      }
+      .text-center {
+        text-align: center;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+      .badge-shipping {
+        background-color: #ffdc72;
+        color: #856404;
+      }
+      .badge-received {
+        background-color: #90e4a2;
+        color: #155724;
+      }
+      .badge-completed {
+        background-color: #8fd4fa;
+        color: #004085;
+      }
+      .badge-rejected {
+        background-color: #f8c0c0;
+        color: #721c24;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Order Baskets Summary</h1>
+      <p>Generated on: {{ current_date|date:"F d, Y H:i" }}</p>
+    </div>
+
+    <div class="company-info">
+      <div class="company-name">Company Name</div>
+      <div>123 Business Street, City</div>
+      <div>Email: info@company.com | Phone: +1-123-456-7890</div>
+    </div>
+
+    <div class="summary-box">
+      <h3 class="summary-title">Summary Information</h3>
+      <div class="summary-data">
+        <div class="summary-item">
+          <span class="summary-item-label">Total Order Baskets</span>
+          <span class="summary-item-value">{{ order_baskets|length }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-item-label">Total Weight</span>
+          <span class="summary-item-value"
+            >{{ total_weight|floatformat:2 }} kg</span
+          >
+        </div>
+        <div class="summary-item">
+          <span class="summary-item-label">Total Items</span>
+          <span class="summary-item-value">{{ total_items }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-item-label">Total Price</span>
+          <span class="summary-item-value"
+            >${{ total_price|floatformat:2 }}</span
+          >
+        </div>
+        <div class="summary-item">
+          <span class="summary-item-label">Total Shipping Charge</span>
+          <span class="summary-item-value"
+            >${{ total_shipping_charge|floatformat:2 }}</span
+          >
+        </div>
+        <div class="summary-item">
+          <span class="summary-item-label">Total Profit</span>
+          <span class="summary-item-value"
+            >${{ total_profit|floatformat:2 }}</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Order Baskets Detail</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Tracking #</th>
+            <th>Shipping Provider</th>
+            <th>Status</th>
+            <th>Items</th>
+            <th>Weight (kg)</th>
+            <th>Total Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for basket in order_baskets %}
+          <tr>
+            <td>{{ basket.id }}</td>
+            <td>{{ basket.tracking_number|default:"-" }}</td>
+            <td>{{ basket.shipping_provider.name }}</td>
+            <td>
+              {% if basket.status == "shipping" %}
+              <span class="badge badge-shipping">Shipping</span>
+              {% elif basket.status == "received" %}
+              <span class="badge badge-received">Received</span>
+              {% elif basket.status == "completed" %}
+              <span class="badge badge-completed">Completed</span>
+              {% elif basket.status == "rejected" %}
+              <span class="badge badge-rejected">Rejected</span>
+              {% else %} {{ basket.status }} {% endif %}
+            </td>
+            <td class="text-center">{{ basket.number_of_items }}</td>
+            <td class="text-right">{{ basket.items_weight|floatformat:2 }}</td>
+            <td class="text-right">${{ basket.total_price|floatformat:2 }}</td>
+          </tr>
+          {% endfor %}
+          <tr class="total-row">
+            <td colspan="4">Totals</td>
+            <td class="text-center">{{ total_items }}</td>
+            <td class="text-right">{{ total_weight|floatformat:2 }}</td>
+            <td class="text-right">${{ total_price|floatformat:2 }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    {% if show_orders %}
+    <div class="section page-break">
+      <h3>Orders Detail</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Basket ID</th>
+            <th>Bill #</th>
+            <th>Customer</th>
+            <th>Status</th>
+            <th>Total Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+          <tr>
+            <td>{{ order.id }}</td>
+            <td>{{ order.order_basket.id }}</td>
+            <td>{{ order.bill_id|default:"-" }}</td>
+            <td>{{ order.customer.full_name }}</td>
+            <td>
+              {% if order.status == "pending" %}
+              <span class="badge badge-shipping">Pending</span>
+              {% elif order.status == "boxing" %}
+              <span class="badge badge-shipping">Boxing</span>
+              {% elif order.status == "delivered" %}
+              <span class="badge badge-received">Delivered</span>
+              {% elif order.status == "completed" %}
+              <span class="badge badge-completed">Completed</span>
+              {% elif order.status == "rejected" %}
+              <span class="badge badge-rejected">Rejected</span>
+              {% else %} {{ order.status }} {% endif %}
+            </td>
+            <td class="text-right">${{ order.total_price|floatformat:2 }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <div class="footer">
+      <p>This document is computer generated and requires no signature.</p>
+      <p>
+        Generated by Django Hello World System © {{ current_date|date:"Y" }}
+      </p>
+    </div>
+  </body>
+</html>

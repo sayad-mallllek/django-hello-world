@@ -10,10 +10,18 @@ from openpyxl.styles import Font, Alignment, PatternFill
 from openpyxl.utils import get_column_letter
 
 from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from django.template.loader import render_to_string
+from django.http import JsonResponse
 from orders.models import Order, OrderBasket
 from expenses.models import Capital
 from providers.models import ShippingProvider
-from django.db.models import Sum
+from django.db.models import Sum, Count, Prefetch
 import io
 
 
@@ -41,6 +49,159 @@ def generate_pdf(request):
 
     return HttpResponse("Not the correct method")
 
+
+def print_order_baskets_pdf(request):
+    """
+    Generate a PDF report for selected order baskets
+    """
+    if request.method != "GET":
+        return HttpResponse("Method not allowed", status=405)
+    
+    # Get the basket IDs from the URL parameter
+    basket_ids_str = request.GET.get('ids', '')
+    if not basket_ids_str:
+        return HttpResponse("No basket IDs provided", status=400)
+    
+    try:
+        basket_ids = [int(id.strip()) for id in basket_ids_str.split(',') if id.strip()]
+    except ValueError:
+        return HttpResponse("Invalid basket IDs", status=400)
+    
+    if not basket_ids:
+        return HttpResponse("No valid basket IDs provided", status=400)
+    
+    # Get the order baskets
+    baskets = OrderBasket.objects.filter(id__in=basket_ids).prefetch_related(Prefetch('order_set', to_attr='orders')).order_by('id')
+    
+    if not baskets.exists():
+        return HttpResponse("No baskets found", status=404)
+    
+    # Create a file-like buffer to receive PDF data
+    buffer = io.BytesIO()
+    
+    # Create the PDF document
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    story = []
+    
+    # Get sample style sheet
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        spaceAfter=30,
+        alignment=TA_CENTER,
+        textColor=colors.darkblue
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=16,
+        spaceAfter=12,
+        spaceBefore=20,
+        textColor=colors.darkblue
+    )
+    
+    # Title
+    story.append(Paragraph("Order Baskets Summary Report", title_style))
+    story.append(Spacer(1, 20))
+    
+    # Summary statistics
+    total_baskets = baskets.count()
+    total_orders = sum([len(basket.orders) for basket in baskets])
+    total_amount = sum([basket.total_price for basket in baskets])
+    
+    story.append(Paragraph("Summary Statistics", heading_style))
+    
+    summary_data = [
+        ['Total Baskets:', str(total_baskets)],
+        ['Total Orders:', str(total_orders)],
+        ['Total Amount:', f'${total_amount:.2f}'],
+        ['Generated:', datetime.now().strftime('%Y-%m-%d %H:%M:%S')]
+    ]
+    
+    summary_table = Table(summary_data, colWidths=[2*inch, 2*inch])
+    summary_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 1, colors.lightgrey),
+    ]))
+    
+    story.append(summary_table)
+    story.append(Spacer(1, 30))
+    
+    # Detailed basket information
+    story.append(Paragraph("Basket Details", heading_style))
+    
+    for basket in baskets:
+        # Basket header
+        basket_title = f"Basket #{basket.id}"
+        story.append(Paragraph(basket_title, styles['Heading3']))
+        
+        # Basket info
+        basket_info = [
+            ['Created:', basket.created_at.strftime('%Y-%m-%d %H:%M')],
+            ['Orders Count:', str(len(basket.orders))],
+            ['Total Price:', f'${basket.total_price:.2f}'],
+        ]
+        
+        basket_info_table = Table(basket_info, colWidths=[1.5*inch, 2*inch])
+        basket_info_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ]))
+        
+        story.append(basket_info_table)
+        story.append(Spacer(1, 10))
+        
+        # Orders in this basket
+        if len(basket.orders) > 0:
+            story.append(Paragraph("Orders:", styles['Heading4']))
+            
+            order_data = [['Order ID', 'Items Link', 'Quantity', 'Price', 'Status']]
+            
+            for order in basket.orders:
+                print("Order", order)
+                order_data.append([
+                    str(order.id),
+                    order.items_link if order.items_link else 'N/A',
+                    str(order.number_of_items),
+                    f'${order.total_price:.2f}',
+                    order.status
+                ])
+            
+            order_table = Table(order_data, colWidths=[0.8*inch, 2.5*inch, 0.8*inch, 0.8*inch, 1*inch])
+            order_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, -1), 8),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.beige, colors.lightgrey]),
+            ]))
+            
+            story.append(order_table)
+        
+        story.append(Spacer(1, 20))
+    
+    # Build the PDF
+    doc.build(story)
+    
+    # FileResponse sets the Content-Disposition header so that browsers
+    # present the option to save the file.
+    buffer.seek(0)
+    filename = f"order_baskets_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    return FileResponse(buffer, as_attachment=True, filename=filename)
+    
 
 class Overview(views.generic.ListView):
     admin = {}

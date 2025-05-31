@@ -138,6 +138,7 @@ class OrderBasket(BaseModel):
         "providers.ShippingProvider", on_delete=models.CASCADE
     )
 
+
     def __str__(self):
         return f"{self.id} - {self.shipped_at}"
 
