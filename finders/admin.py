@@ -3,6 +3,8 @@ from django.urls import path
 from django.contrib.auth.decorators import user_passes_test
 
 from finders import views
+from orders.views import RangeSummary, export_range_summary, print_order_baskets_pdf, print_orders_pdf
+from providers.views import ShippingProviderAnalyze, export_shipping_provider_analyze
 
 
 # Define superuser check decorator
@@ -26,33 +28,33 @@ class CustomAdminSite(admin.AdminSite):
             ),
             path(
                 "range-summary/",
-                superuser_required(views.RangeSummary.as_view(admin=self)),
+                superuser_required(RangeSummary.as_view(admin=self)),
                 name="range_summary",
             ),
              path(
                 "export-range-summary/",
-                superuser_required(views.export_range_summary),
+                superuser_required(export_range_summary),
                 name="export_range_summary",
             ),
             path(
                 "shipping-provider-analyze/",
-                superuser_required(views.ShippingProviderAnalyze.as_view(admin=self)),
+                superuser_required(ShippingProviderAnalyze.as_view(admin=self)),
                 name="shipping_provider_analyze",
             ),
             path(
                 "export-shipping-provider-analyze/",
-                superuser_required(views.export_shipping_provider_analyze),
+                superuser_required(export_shipping_provider_analyze),
                 name="export_shipping_provider_analyze",
             ),
             path("generate_pdf/", views.generate_pdf, name="generate_pdf"),
             path(
                 "print-order-baskets-pdf/",
-                superuser_required(views.print_order_baskets_pdf),
+                superuser_required(print_order_baskets_pdf),
                 name="print_order_baskets_pdf",
             ),
             path(
                 "print-orders-pdf/",
-                superuser_required(views.print_orders_pdf),
+                superuser_required(print_orders_pdf),
                 name="print_orders_pdf",
             ),
         ]
