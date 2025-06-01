@@ -26,13 +26,22 @@ class OrderAdmin(BaseAdminModel):
         "delivery_provider_id__name",
     )
 
-    actions = ["mark_as_delivered"]
+    actions = ["mark_as_delivered", "print_to_pdf"]
 
     def mark_as_delivered(self, request, queryset):
         queryset.update(status="delivered")
         self.message_user(request, "Marked as delivered")
 
     mark_as_delivered.short_description = "Mark as delivered"
+    
+    def print_to_pdf(self, request, queryset):
+        selected_ids = ",".join(str(order.id) for order in queryset)
+        url = f"/print-orders-pdf/?ids={selected_ids}"
+        return HttpResponse(
+            f'<script>window.open("{url}", "_blank").focus();</script>'
+        )
+    
+    print_to_pdf.short_description = "Print selected orders to PDF"
 
     @admin.display(ordering="customer__full_name", description="Customer")
     def get_customer(self, obj):

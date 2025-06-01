@@ -494,3 +494,171 @@ def export_shipping_provider_analyze(request):
     # Save the workbook to the response
     wb.save(response)
     return response
+
+
+def print_orders_pdf(request):
+    """
+    Generate a PDF report for selected orders
+    """
+    if request.method != "GET":
+        return HttpResponse("Method not allowed", status=405)
+    
+    # Get the order IDs from the URL parameter
+    order_ids_str = request.GET.get('ids', '')
+    if not order_ids_str:
+        return HttpResponse("No order IDs provided", status=400)
+    
+    try:
+        order_ids = [int(id.strip()) for id in order_ids_str.split(',') if id.strip()]
+    except ValueError:
+        return HttpResponse("Invalid order IDs", status=400)
+    
+    if not order_ids:
+        return HttpResponse("No valid order IDs provided", status=400)
+    
+    # Get the orders with related data
+    orders = Order.objects.filter(id__in=order_ids).select_related(
+        'customer', 'order_basket', 'delivery_provider'
+    ).order_by('id')
+    
+    if not orders.exists():
+        return HttpResponse("No orders found", status=404)
+    
+    # Create a file-like buffer to receive PDF data
+    buffer = io.BytesIO()
+    
+    # Create the PDF document
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    story = []
+    
+    # Get sample style sheet
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        spaceAfter=30,
+        alignment=TA_CENTER,
+        textColor=colors.darkblue
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=16,
+        spaceAfter=12,
+        spaceBefore=20,
+        textColor=colors.darkblue
+    )
+    
+    # Title
+    story.append(Paragraph("Orders Summary Report", title_style))
+    story.append(Spacer(1, 20))
+    
+    # Summary statistics
+    total_orders = orders.count()
+    total_amount = sum([order.total_price for order in orders])
+    total_items = sum([order.number_of_items for order in orders])
+    total_delivery_charges = sum([order.delivery_charge or 0 for order in orders])
+    
+    story.append(Paragraph("Summary Statistics", heading_style))
+    
+    summary_data = [
+        ['Total Orders:', str(total_orders)],
+        ['Total Items:', str(total_items)],
+        ['Total Amount:', f'${total_amount:.2f}'],
+        ['Total Delivery Charges:', f'${total_delivery_charges:.2f}'],
+        ['Generated:', datetime.now().strftime('%Y-%m-%d %H:%M:%S')]
+    ]
+    
+    summary_table = Table(summary_data, colWidths=[2*inch, 2*inch])
+    summary_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 1, colors.lightgrey),
+    ]))
+    
+    story.append(summary_table)
+    story.append(Spacer(1, 30))
+    
+    # Detailed order information
+    story.append(Paragraph("Order Details", heading_style))
+    
+    # Create table with order data
+    order_data = [['Order ID', 'Customer', 'Bill ID', 'Status', 'Items', 'Total Price', 'Delivery Charge', 'Created At']]
+    
+    for order in orders:
+        order_data.append([
+            str(order.id),
+            order.customer.full_name if order.customer else 'N/A',
+            order.bill_id if order.bill_id else 'N/A',
+            order.get_status_display(),
+            str(order.number_of_items),
+            f'${order.total_price:.2f}',
+            f'${order.delivery_charge:.2f}' if order.delivery_charge else '$0.00',
+            order.created_at.strftime('%Y-%m-%d %H:%M')
+        ])
+    
+    order_table = Table(order_data, colWidths=[0.7*inch, 1.5*inch, 0.8*inch, 0.8*inch, 0.6*inch, 0.8*inch, 0.8*inch, 1.1*inch])
+    order_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.beige, colors.lightgrey]),
+    ]))
+    
+    story.append(order_table)
+    story.append(Spacer(1, 30))
+    
+    # Order details breakdown
+    story.append(Paragraph("Individual Order Information", heading_style))
+    
+    for order in orders:
+        # Order header
+        order_title = f"Order #{order.id}"
+        story.append(Paragraph(order_title, styles['Heading3']))
+        
+        # Order info
+        order_info = [
+            ['Customer:', order.customer.full_name if order.customer else 'N/A'],
+            ['Status:', order.get_status_display()],
+            ['Number of Items:', str(order.number_of_items)],
+            ['Items Link:', order.items_link if order.items_link else 'N/A'],
+            ['Total Price:', f'${order.total_price:.2f}'],
+            ['Delivery Charge:', f'${order.delivery_charge:.2f}' if order.delivery_charge else '$0.00'],
+            ['Delivery Provider:', order.delivery_provider.name if order.delivery_provider else 'N/A'],
+            ['Order Basket ID:', str(order.order_basket.id) if order.order_basket else 'N/A'],
+        ]
+        
+        if order.notes:
+            order_info.append(['Notes:', order.notes[:100] + '...' if len(order.notes) > 100 else order.notes])
+        
+        order_info_table = Table(order_info, colWidths=[2*inch, 3*inch])
+        order_info_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
+        ]))
+        
+        story.append(order_info_table)
+        story.append(Spacer(1, 20))
+    
+    # Build the PDF
+    doc.build(story)
+    
+    # FileResponse sets the Content-Disposition header so that browsers
+    # present the option to save the file.
+    buffer.seek(0)
+    filename = f"orders_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    return FileResponse(buffer, as_attachment=True, filename=filename)

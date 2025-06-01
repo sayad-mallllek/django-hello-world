@@ -50,6 +50,11 @@ class CustomAdminSite(admin.AdminSite):
                 superuser_required(views.print_order_baskets_pdf),
                 name="print_order_baskets_pdf",
             ),
+            path(
+                "print-orders-pdf/",
+                superuser_required(views.print_orders_pdf),
+                name="print_orders_pdf",
+            ),
         ]
         return custom_urls + admin_urls  # custom urls must be at the beginning
 
