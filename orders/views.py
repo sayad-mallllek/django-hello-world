@@ -11,8 +11,43 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+import arabic_reshaper
+from bidi.algorithm import get_display
 
 from .models import Order, OrderBasket
+
+
+def process_arabic_text(text):
+    """
+    Process Arabic text for proper display in PDF by reshaping and applying bidirectional algorithm
+    """
+    if not text or not isinstance(text, str):
+        return text
+    
+    # Reshape Arabic text to connect letters properly
+    reshaped_text = arabic_reshaper.reshape(text)
+    
+    # Apply bidirectional algorithm for proper text direction
+    bidi_text = get_display(reshaped_text)
+    
+    return bidi_text
+
+
+def register_fonts():
+    """
+    Register fonts that support Arabic text
+    """
+    try:
+        # Register DejaVu Sans which supports Arabic
+        pdfmetrics.registerFont(TTFont('DejaVuSans', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'))
+        pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'))
+        return True
+    except Exception as e:
+        print(f"Warning: Could not register Arabic font: {e}")
+        return False
 
 
 def print_order_baskets_pdf(request):
@@ -21,6 +56,9 @@ def print_order_baskets_pdf(request):
     """
     if request.method != "GET":
         return HttpResponse("Method not allowed", status=405)
+    
+    # Register Arabic-supporting fonts
+    arabic_font_available = register_fonts()
     
     # Get the basket IDs from the URL parameter
     basket_ids_str = request.GET.get('ids', '')
@@ -93,7 +131,7 @@ def print_order_baskets_pdf(request):
     summary_table = Table(summary_data, colWidths=[2*inch, 2*inch])
     summary_table.setStyle(TableStyle([
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (0, 0), (0, -1), 'DejaVuSans-Bold' if arabic_font_available else 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
         ('GRID', (0, 0), (-1, -1), 1, colors.lightgrey),
@@ -120,7 +158,7 @@ def print_order_baskets_pdf(request):
         basket_info_table = Table(basket_info, colWidths=[1.5*inch, 2*inch])
         basket_info_table.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 0), (0, -1), 'DejaVuSans-Bold' if arabic_font_available else 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, -1), 9),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ]))
@@ -148,7 +186,8 @@ def print_order_baskets_pdf(request):
                 ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                 ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTNAME', (0, 0), (-1, 0), 'DejaVuSans-Bold' if arabic_font_available else 'Helvetica-Bold'),
+                ('FONTNAME', (0, 1), (-1, -1), 'DejaVuSans' if arabic_font_available else 'Helvetica'),
                 ('FONTSIZE', (0, 0), (-1, -1), 8),
                 ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
@@ -175,6 +214,9 @@ def print_orders_pdf(request):
     """
     if request.method != "GET":
         return HttpResponse("Method not allowed", status=405)
+    
+    # Register Arabic-supporting fonts
+    arabic_font_available = register_fonts()
     
     # Get the order IDs from the URL parameter
     order_ids_str = request.GET.get('ids', '')
@@ -249,7 +291,7 @@ def print_orders_pdf(request):
     summary_table = Table(summary_data, colWidths=[2*inch, 2*inch])
     summary_table.setStyle(TableStyle([
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (0, 0), (0, -1), 'DejaVuSans-Bold' if arabic_font_available else 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
         ('GRID', (0, 0), (-1, -1), 1, colors.lightgrey),
@@ -265,9 +307,12 @@ def print_orders_pdf(request):
     order_data = [['Order ID', 'Customer', 'Bill ID', 'Status', 'Items', 'Total Price', 'Delivery Charge', 'Created At']]
     
     for order in orders:
+        customer_name = order.customer.full_name if order.customer else 'N/A'
+        processed_customer_name = process_arabic_text(customer_name) if customer_name != 'N/A' else 'N/A'
+        
         order_data.append([
             str(order.id),
-            order.customer.full_name if order.customer else 'N/A',
+            processed_customer_name,
             order.bill_id if order.bill_id else 'N/A',
             order.get_status_display(),
             str(order.number_of_items),
@@ -281,7 +326,8 @@ def print_orders_pdf(request):
         ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (0, 0), (-1, 0), 'DejaVuSans-Bold' if arabic_font_available else 'Helvetica-Bold'),
+        ('FONTNAME', (0, 1), (-1, -1), 'DejaVuSans' if arabic_font_available else 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -1), 8),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
@@ -300,21 +346,21 @@ def print_orders_pdf(request):
         story.append(Paragraph(order_title, styles['Heading3']))
         
         # Order info
+        customer_name = order.customer.full_name if order.customer else '-'
+        processed_customer_name = process_arabic_text(customer_name) if customer_name != '-' else '-'
+        
+        customer_address = order.customer.address if order.customer else '-'
+        processed_address = process_arabic_text(customer_address) if customer_address != '-' else '-'
+
+        print("processed_address:", processed_address)
+        
         order_info = [
-            ['Customer:', order.customer.full_name if order.customer else 'N/A'],
-            ['Bill ID:', order.bill_id if order.bill_id else 'N/A'],
-            ['Status:', order.get_status_display()],
-            ['Items Link:', order.items_link if order.items_link else 'N/A'],
-            ['Number of Items:', str(order.number_of_items)],
-            ['Total Price:', f'${order.total_price:.2f}'],
-            ['Delivery Charge:', f'${order.delivery_charge:.2f}' if order.delivery_charge else '$0.00'],
-            ['Customer Delivery Charge:', f'${order.customer_delivery_charge:.2f}' if order.customer_delivery_charge else '$0.00'],
-            ['Has Received Price:', 'Yes' if order.has_received_price else 'No'],
-            ['Delivery Provider:', order.delivery_provider.name if order.delivery_provider else 'N/A'],
-            ['Order Basket ID:', str(order.order_basket.id) if order.order_basket else 'N/A'],
-            ['Created:', order.created_at.strftime('%Y-%m-%d %H:%M')],
-            ['Ordered At:', order.ordered_at.strftime('%Y-%m-%d %H:%M') if order.ordered_at else 'N/A'],
-            ['Delivered At:', order.delivered_at.strftime('%Y-%m-%d %H:%M') if order.delivered_at else 'N/A'],
+            ['Shippier:', 'Finders - Shop And Ship'],
+            ['Customer:', processed_customer_name],
+            ['Note:', order.notes if order.notes else '-'],
+            ['Tel:', order.customer.phone_number if order.customer else '-'],
+            ['Address:', processed_address],
+            ['Price:', f'${((order.total_price or 0) + (order.delivery_charge or 0)):.2f}'],
         ]
         
         if order.notes:
@@ -323,7 +369,8 @@ def print_orders_pdf(request):
         order_info_table = Table(order_info, colWidths=[2*inch, 3*inch])
         order_info_table.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 0), (0, -1), 'DejaVuSans-Bold' if arabic_font_available else 'Helvetica-Bold'),
+            ('FONTNAME', (0, 0), (1, -1), 'DejaVuSans' if arabic_font_available else 'Helvetica'),
             ('FONTSIZE', (0, 0), (-1, -1), 9),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
